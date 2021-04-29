@@ -8,9 +8,9 @@ sklearn = "*"
 numpy = "*"
 pyedflib = "*"
 pandas = "<1"
-tensorflow-gpu = "==2.2"
 openpyxl = "*"
 pylsl = "*"
+mne = "*"
 
 [dev-packages]
 
