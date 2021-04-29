@@ -3,7 +3,7 @@
 ########################################################
 # EEG data preprocess
 # Flow:
-# 1. Split data into windows of 1 second
+# 1. Split data into windows of 1 second, 160Hz -> 1 window = 160 samples
 # 2. z-score
 # 3. Convert to 2D (?)
 ########################################################
@@ -22,7 +22,7 @@ def get_args():
     parser.add_argument('-d', '--directory', default="raw_data/", nargs='*', type=str, help=hpstr)
 
     hpstr = "set window size"
-    parser.add_argument('-w', '--window', default=10, nargs='*', type=int, help=hpstr)
+    parser.add_argument('-w', '--window', default=160, nargs='*', type=int, help=hpstr)
 
     hpstr = "set whether convert to 2D matrix"
     parser.add_argument('--convert', action='store_true', help=hpstr)
@@ -35,6 +35,9 @@ def get_args():
 
     hpstr = "set output directory"
     parser.add_argument('-o', '--output_dir', default="preprocessed_data/", nargs='*', help=hpstr)
+
+    hpstr = "set whether store data"
+    parser.add_argument('--set_store', action='store_true', help=hpstr)
 
     args = parser.parse_args()
     return(args)
@@ -145,21 +148,29 @@ def segment_signal_without_transition(data, label, window_size):
                 # labels = np.append(labels, stats.mode(label[start:end])[0][0])
     return segments, labels
 
-def apply_mixup(dataset_dir, convert, segment, window_size, start=1, end=110):
+def apply_mixup(dataset_dir, convert, window_size, start=1, end=110):
     # initial empty label arrays
     label_inter    = np.empty([0])
     # initial empty data arrays
     if convert == False:
+        # not convert to 2D
         data_inter    = np.empty([0, window_size, 64])
     else:
+        # convert to 2D
         data_inter    = np.empty([0, window_size, 10, 11])
+
+    print('Processing', start, 'to', end)
     for j in range(start, end):
+        # why?
         if (j == 89):
             j = 109
         # get directory name for one subject
         data_dir = dataset_dir+"S"+format(j, '03d')
         # get task list for one subject
         task_list = [task for task in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, task))]
+        task_list.sort()
+        print(j, task_list)
+        exit()
         for task in task_list:
             # R02: eye closed
             # R04: MI opening and closing left or right fist

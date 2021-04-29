@@ -1,7 +1,11 @@
 #! /usr/bin/python3
 
 ########################################################
-# EEG data preprocess for 1D/2D/3D
+# EEG data preprocess
+# Flow:
+# 1. Split data into windows of 1 second
+# 2. z-score
+# 3. Convert to 2D (?)
 ########################################################
 import argparse
 import os
@@ -83,30 +87,32 @@ def read_data(file_name):
     del f
     return signal, signal_labels
 
-def data_1Dto2D(data, Y=10, X=11):
-    # data_2D[0] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
-    # data_2D[1] = (       0,       0,       0,       0, data[0],       0,data[-1],       0,       0,       0,       0)
-    # data_2D[2] = (       0, data[1],       0, data[2],       0,       0,       0,data[-3],       0,data[-2],       0)
-    # data_2D[3] = (       0,       0, data[3],       0,       0,       0,       0,       0,data[-4],       0,       0)
-    # data_2D[4] = (       0, data[4],       0,       0,       0,       0,       0,       0,       0,data[-5],       0)
-    # data_2D[5] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
-    # data_2D[6] = (       0, data[5],       0,       0,       0,       0,       0,       0,       0,data[-6],       0)
-    # data_2D[7] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
-    # data_2D[8] = (       0,       0,       0,       0, data[6],       0, data[7],       0,       0,       0,       0)
-    # data_2D[9] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
-
+def data_1Dto2D(data, Y=10, X=11, channel=64):
     data_2D = np.zeros([Y, X])
-    data_2D[0] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
-    data_2D[1] = (       0,       0,       0,       0,data[25],       0,data[27],       0,       0,       0,       0)
-    data_2D[2] = (       0,data[29],       0,data[31],       0,       0,       0,data[35],       0,data[37],       0)
-    data_2D[3] = (       0,       0, data[0],       0,       0,       0,       0,       0, data[6],       0,       0)
-    data_2D[4] = (       0,data[40],       0,       0,       0,       0,       0,       0,       0,data[41],       0)
-    data_2D[5] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
-    data_2D[6] = (       0,data[46],       0,       0,       0,       0,       0,       0,       0,data[54],       0)
-    data_2D[7] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
-    data_2D[8] = (       0,       0,       0,       0,data[60],       0,data[62],       0,       0,       0,       0)
-    data_2D[9] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
-    return data_2D
+    if channel == 64:
+        data_2D[0] = (             0,        0,              0,        0, data[21], data[22], data[23],        0,           0,        0,           0)
+        data_2D[1] = (           0,        0,              0, data[24], data[25], data[26], data[27], data[28],             0,          0,           0)
+        data_2D[2] = (           0, data[29], data[30], data[31], data[32], data[33], data[34], data[35], data[36], data[37],           0)
+        data_2D[3] = (           0, data[38],  data[0],  data[1],  data[2],  data[3],  data[4],  data[5],  data[6], data[39],          0)
+        data_2D[4] = (data[42], data[40],  data[7],  data[8],  data[9], data[10], data[11], data[12], data[13], data[41], data[43])
+        data_2D[5] = (           0, data[44], data[14], data[15], data[16], data[17], data[18], data[19], data[20], data[45],          0)
+        data_2D[6] = (           0, data[46], data[47], data[48], data[49], data[50], data[51], data[52], data[53], data[54],          0)
+        data_2D[7] = (           0,        0,           0, data[55], data[56], data[57], data[58], data[59],             0,        0,          0)
+        data_2D[8] = (           0,        0,           0,        0, data[60], data[61], data[62],        0,             0,        0,          0)
+        data_2D[9] = (           0,        0,           0,        0,          0, data[63],          0,        0,             0,        0,          0)
+        return data_2D
+    elif channel == 14:
+        data_2D[0] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
+        data_2D[1] = (       0,       0,       0,       0,data[25],       0,data[27],       0,       0,       0,       0)
+        data_2D[2] = (       0,data[29],       0,data[31],       0,       0,       0,data[35],       0,data[37],       0)
+        data_2D[3] = (       0,       0, data[0],       0,       0,       0,       0,       0, data[6],       0,       0)
+        data_2D[4] = (       0,data[40],       0,       0,       0,       0,       0,       0,       0,data[41],       0)
+        data_2D[5] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
+        data_2D[6] = (       0,data[46],       0,       0,       0,       0,       0,       0,       0,data[54],       0)
+        data_2D[7] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
+        data_2D[8] = (       0,       0,       0,       0,data[60],       0,data[62],       0,       0,       0,       0)
+        data_2D[9] = (       0,       0,       0,       0,       0,       0,       0,       0,       0,       0,       0)
+        return data_2D
 
 def norm_dataset(dataset_1D):
     norm_dataset_1D = np.zeros([dataset_1D.shape[0], 64])
@@ -229,9 +235,9 @@ def apply_mixup(dataset_dir, parallel, convert, segment, window_size, start=1, e
     index = np.array(range(0, len(label_inter)))
     np.random.shuffle(index)
     if (parallel==True):
-        shuffled_data_cnn    = data_inter_cnn[index]
-        shuffled_data_rnn    = data_inter_rnn[index]
-        shuffled_label     = label_inter[index]
+        shuffled_data = data_inter_cnn[index]
+        shuffled_data = data_inter_rnn[index]
+        shuffled_label = label_inter[index]
     else:
         shuffled_data    = data_inter[index]
         shuffled_label     = label_inter[index]
